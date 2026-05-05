@@ -1,0 +1,101 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\title{Armenia Labour Force Survey (2021--2024):\Comparative Statistical Report}
+\author{Prepared with Python pipeline}
+\date{\today}
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+This report analyzes labour-market patterns in Armenia using Armstat Labour Force Survey microdata for 2021--2024, with 2024 analyzed separately and compared against pooled 2021--2023.
+
+\subsection*{Research Questions}
+\begin{enumerate}
+    \item Does sectoral employment distribution (agriculture/industry/services) differ by gender and by region?
+    \item Is disability status associated with labour-force status (employed/unemployed/out of labour force)?
+    \item Among employed workers, does marital status affect average monthly income?
+    \item Among employed workers, do age groups differ in average paid working hours per week?
+    \item Among employed workers, is unpaid domestic work associated with paid working hours?
+\end{enumerate}
+
+\section{Data Description}
+Data source: Armstat Labour Force Survey files for 2021--2024. Variable harmonization and decoding are performed using the questionnaire/codebook. Two analytical datasets are created: (A) 2024 only, (B) pooled 2021--2023.
+
+\section{Data Cleaning and Harmonization}
+Cleaning decisions are recorded in \texttt{outputs/tables/cleaning\_log.csv}. The pipeline:
+\begin{itemize}
+    \item Harmonizes column names across years using a codebook-driven mapping.
+    \item Replaces special nonresponse codes (e.g., 96/97/98/99, -9 to -5) with missing values.
+    \item Applies validity rules for income and hours.
+    \item Recodes labelled categories (gender, employment status, disability, marital status, sector, age groups).
+\end{itemize}
+
+\section{Methodology}
+\begin{itemize}
+    \item \textbf{Chi-square tests of independence}: for sector vs gender/region and disability vs labour-force status.
+    \item \textbf{ANOVA}: for mean income by marital status and mean paid hours by age group.
+    \item \textbf{Linear regression}: paid weekly hours regressed on unpaid domestic hours (simple and adjusted models).
+    \item \textbf{Confidence intervals}: visualized with 95\% CI error bars and reported where applicable.
+\end{itemize}
+
+\section{Results}
+\subsection{Q1: Sector by Gender/Region}
+Include \texttt{outputs/tables/q1\_chi2\_summary.csv}, \texttt{q1\_sector\_gender\_*.csv}, \texttt{q1\_sector\_region\_*.csv}.
+\begin{figure}[H]
+\centering
+\includegraphics[width=.75\textwidth]{outputs/figures/sector_by_gender.png}
+\caption{Sector distribution by gender.}
+\end{figure}
+
+\subsection{Q2: Disability and Labour-force Status}
+Include \texttt{outputs/tables/q2\_chi2\_summary.csv}.
+\begin{figure}[H]
+\centering
+\includegraphics[width=.75\textwidth]{outputs/figures/employment_by_disability_stacked.png}
+\caption{Employment status composition by disability status.}
+\end{figure}
+
+\subsection{Q3: Marital Status and Income}
+Include \texttt{outputs/tables/q3\_anova\_income.csv}.
+\begin{figure}[H]
+\centering
+\includegraphics[width=.8\textwidth]{outputs/figures/income_by_marital.png}
+\caption{Monthly income by marital status (employed only).}
+\end{figure}
+
+\subsection{Q4: Age Group and Paid Working Hours}
+Include \texttt{outputs/tables/q4\_anova\_hours.csv}.
+\begin{figure}[H]
+\centering
+\includegraphics[width=.8\textwidth]{outputs/figures/hours_by_agegroup_ci.png}
+\caption{Mean weekly paid hours by age group with 95\% CI.}
+\end{figure}
+
+\subsection{Q5: Unpaid Domestic Work and Paid Hours}
+Include \texttt{outputs/tables/q5\_regression\_summary.csv} and model outputs.
+\begin{figure}[H]
+\centering
+\includegraphics[width=.75\textwidth]{outputs/figures/paid_vs_unpaid_hours_reg.png}
+\caption{Paid weekly hours vs unpaid domestic hours.}
+\end{figure}
+
+\section{Discussion}
+Interpret findings separately for 2024 and 2021--2023 and compare: statistical significance, effect sizes, and practical significance. Avoid causal claims.
+
+\section{Limitations}
+Potential limitations include coding mismatches across years, item nonresponse, top-coding/reporting error in income and hours, and complex survey design effects. If sampling weights are unavailable/not used, state this explicitly.
+
+\section{Conclusion}
+Summarize key labour-market patterns and how 2024 differs from earlier years.
+
+\appendix
+\section{Reproducibility}
+Run \texttt{python src/lfs\_analysis.py}. Outputs are written to \texttt{outputs/}.
+
+\end{document}
