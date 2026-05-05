@@ -37,6 +37,7 @@ DATA_FILES = {
 OUT_TABLES = ROOT / "outputs" / "tables"
 OUT_FIGS = ROOT / "outputs" / "figures"
 OUT_DATA = ROOT / "outputs" / "data"
+OUT_LEGACY = ROOT / "Outputs"
 
 
 # IMPORTANT:
@@ -406,6 +407,8 @@ def main():
     OUT_TABLES.mkdir(parents=True, exist_ok=True)
     OUT_FIGS.mkdir(parents=True, exist_ok=True)
     OUT_DATA.mkdir(parents=True, exist_ok=True)
+    (OUT_LEGACY / "figures").mkdir(parents=True, exist_ok=True)
+    (OUT_LEGACY / "tables").mkdir(parents=True, exist_ok=True)
 
     frames = []
     cleaning_log = []
@@ -620,29 +623,83 @@ def main():
     sns.set_theme(style="whitegrid")
 
     if not emp.empty:
+        ordered_sector = ["Agriculture", "Industry", "Services"]
+
         plt.figure(figsize=(10, 5))
-        sns.countplot(data=emp.dropna(subset=["sector", "gender"]), x="sector", hue="gender")
+        sns.countplot(
+            data=emp.dropna(subset=["sector", "gender"]),
+            x="sector",
+            hue="gender",
+            order=ordered_sector,
+        )
+        plt.xlabel("Economic sector")
+        plt.ylabel("Number of employed respondents")
+        plt.title("Sector distribution by gender (all periods)")
         plt.tight_layout()
         plt.savefig(OUT_FIGS / "sector_by_gender.png", dpi=300)
         plt.close()
 
-        plt.figure(figsize=(12, 5))
-        sns.countplot(data=emp.dropna(subset=["region", "sector"]), x="region", hue="sector")
-        plt.xticks(rotation=45, ha="right")
-        plt.tight_layout()
-        plt.savefig(OUT_FIGS / "sector_by_region.png", dpi=300)
-        plt.close()
+        region_plot = (
+            emp.dropna(subset=["region", "sector", "period"])
+            .groupby(["period", "region", "sector"])
+            .size()
+            .rename("n")
+            .reset_index()
+        )
+        region_plot["share"] = region_plot["n"] / region_plot.groupby(["period", "region"])["n"].transform("sum")
+
+        g = sns.catplot(
+            data=region_plot,
+            x="region",
+            y="share",
+            hue="sector",
+            col="period",
+            kind="bar",
+            height=5,
+            aspect=1.2,
+            order=sorted(region_plot["region"].unique()),
+            hue_order=ordered_sector,
+        )
+        g.set_axis_labels("Region code", "Within-region sector share")
+        g.set_titles("Period: {col_name}")
+        for ax in g.axes.flat:
+            ax.tick_params(axis="x", rotation=45)
+            ax.set_ylim(0, 1)
+        g.tight_layout()
+        g.savefig(OUT_FIGS / "sector_by_region.png", dpi=300)
+        plt.close("all")
 
         plt.figure(figsize=(10, 5))
-        sns.boxplot(
+        sns.violinplot(
             data=emp.dropna(subset=["marital_status", "monthly_income", "period"]),
             x="marital_status",
             y="monthly_income",
             hue="period",
+            cut=0,
+            inner="quartile",
         )
         plt.xticks(rotation=20)
+        plt.ylim(0, np.nanquantile(emp["monthly_income"], 0.99))
+        plt.ylabel("Monthly income")
+        plt.title("Income distribution by marital status")
         plt.tight_layout()
         plt.savefig(OUT_FIGS / "income_by_marital.png", dpi=300)
+        plt.close()
+
+        plt.figure(figsize=(10, 5))
+        sns.pointplot(
+            data=emp.dropna(subset=["marital_status", "monthly_income", "period"]),
+            x="marital_status",
+            y="monthly_income",
+            hue="period",
+            errorbar=("ci", 95),
+            dodge=0.3,
+        )
+        plt.xticks(rotation=20)
+        plt.ylabel("Mean monthly income")
+        plt.title("Mean income by marital status with 95% CI")
+        plt.tight_layout()
+        plt.savefig(OUT_FIGS / "income_by_marital_mean_ci.png", dpi=300)
         plt.close()
 
         plt.figure(figsize=(10, 5))
@@ -653,6 +710,8 @@ def main():
             hue="period",
             errorbar=("ci", 95),
         )
+        plt.ylabel("Mean paid hours per week")
+        plt.title("Paid working hours by age group")
         plt.tight_layout()
         plt.savefig(OUT_FIGS / "hours_by_agegroup_ci.png", dpi=300)
         plt.close()
@@ -664,22 +723,47 @@ def main():
             y="paid_hours_week",
             scatter_kws={"alpha": 0.2},
         )
+        plt.xlabel("Unpaid domestic work hours (weekly)")
+        plt.ylabel("Paid work hours (weekly)")
+        plt.title("Association between unpaid and paid work hours")
         plt.tight_layout()
         plt.savefig(OUT_FIGS / "paid_vs_unpaid_hours_reg.png", dpi=300)
         plt.close()
 
-    plt.figure(figsize=(8, 5))
-    sns.histplot(
-        data=all_df.dropna(subset=["employment_status", "disability_status"]),
-        x="employment_status",
-        hue="disability_status",
-        multiple="fill",
-        stat="probability",
+    dis_plot = (
+        all_df.dropna(subset=["employment_status", "disability_status", "period"])
+        .groupby(["period", "disability_status", "employment_status"])
+        .size()
+        .rename("n")
+        .reset_index()
     )
-    plt.xticks(rotation=20)
-    plt.tight_layout()
-    plt.savefig(OUT_FIGS / "employment_by_disability_stacked.png", dpi=300)
-    plt.close()
+    dis_plot["share"] = dis_plot["n"] / dis_plot.groupby(["period", "disability_status"])["n"].transform("sum")
+
+    g2 = sns.catplot(
+        data=dis_plot,
+        x="employment_status",
+        y="share",
+        hue="disability_status",
+        col="period",
+        kind="bar",
+        height=5,
+        aspect=1.2,
+    )
+    g2.set_axis_labels("Labour-force status", "Share within disability group")
+    g2.set_titles("Period: {col_name}")
+    for ax in g2.axes.flat:
+        ax.tick_params(axis="x", rotation=20)
+        ax.set_ylim(0, 1)
+    g2.tight_layout()
+    g2.savefig(OUT_FIGS / "employment_by_disability_stacked.png", dpi=300)
+    plt.close("all")
+
+    for fig in OUT_FIGS.glob("*.png"):
+        (OUT_LEGACY / "figures" / fig.name).write_bytes(fig.read_bytes())
+
+    for tbl in OUT_TABLES.glob("*"):
+        if tbl.is_file():
+            (OUT_LEGACY / "tables" / tbl.name).write_bytes(tbl.read_bytes())
 
     # Descriptive statistics.
     desc = all_df.groupby("period")[
