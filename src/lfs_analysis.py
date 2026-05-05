@@ -34,18 +34,18 @@ OUT_DATA = ROOT / "outputs" / "data"
 
 # Fill these from official codebook/questionnaires after checking each year.
 VARMAP = {
-    "person_id": ["person_id", "pid", "ID"],
-    "weight": ["weight", "wgt", "final_weight"],
-    "age": ["age", "AGE"],
-    "sex": ["sex", "gender", "SEX"],
-    "region": ["region", "marz", "REGION"],
-    "employment_status_raw": ["empl_stat", "labour_status", "ECON_STATUS"],
-    "nace_section": ["nace", "sector_code", "NACE"],
-    "disability_raw": ["disability", "disabled", "DISAB"],
-    "marital_raw": ["marital", "marital_status", "MARITAL"],
-    "monthly_income": ["income_monthly", "wage_month", "MONTH_INC"],
-    "paid_hours_week": ["paid_hours_week", "work_hours", "HOURS_WEEK"],
-    "unpaid_dom_hours": ["unpaid_dom_hours", "domestic_hours", "UNPAID_H"],
+    "person_id": ["person_id", "pid", "ID", "ID_mem", "IDmem"],
+    "weight": ["weight", "wgt", "final_weight", "WeightsCalib_year"],
+    "age": ["age", "AGE", "B4"],
+    "sex": ["sex", "gender", "SEX", "B3"],
+    "region": ["region", "marz", "REGION", "A2"],
+    "employment_status_raw": ["empl_stat", "labour_status", "ECON_STATUS", "POLF", "LF"],
+    "nace_section": ["nace", "sector_code", "NACE", "E4_21group_NACE_rev_2.2", "F3_21groups_NACE_rev_2.2"],
+    "disability_raw": ["disability", "disabled", "DISAB", "D5"],
+    "marital_raw": ["marital", "marital_status", "MARITAL", "B11"],
+    "monthly_income": ["income_monthly", "wage_month", "MONTH_INC", "G1_3Total", "G2_3Total"],
+    "paid_hours_week": ["paid_hours_week", "work_hours", "HOURS_WEEK", "E13", "E14_Res"],
+    "unpaid_dom_hours": ["unpaid_dom_hours", "domestic_hours", "UNPAID_H", "Kd1_Res", "Kb1_Res"],
 }
 
 # common missing/special codes in social surveys
