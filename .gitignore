@@ -1,0 +1,6 @@
+# Generated analysis artifacts
+outputs/
+
+# Binary data/figures
+*.parquet
+*.png
