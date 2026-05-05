@@ -114,21 +114,29 @@ SPECIAL_MISSINGS = {
 }
 
 
-def choose_col(cols: List[str], candidates: List[str]) -> str:
-    for c in candidates:
-        if c in cols:
-            return c
-    raise KeyError(f"None of {candidates} found in columns")
+def choose_col(df: pd.DataFrame, candidates: List[str]) -> str:
+    present = [c for c in candidates if c in df.columns]
+    if not present:
+        raise KeyError(f"None of {candidates} found in columns")
+
+    # Pick the candidate with the largest amount of non-missing information.
+    # This avoids selecting a structurally sparse column just because it appears
+    # earlier in VARMAP.
+    return max(
+        present,
+        key=lambda c: int(df[c].notna().sum()),
+    )
 
 
 def harmonize_columns(df: pd.DataFrame) -> pd.DataFrame:
-    cols = df.columns.tolist()
     rename = {}
+    selected_sources = {}
 
     for target, candidates in VARMAP.items():
         try:
-            source_col = choose_col(cols, candidates)
+            source_col = choose_col(df, candidates)
             rename[source_col] = target
+            selected_sources[target] = source_col
         except KeyError:
             pass
 
@@ -156,6 +164,10 @@ def harmonize_columns(df: pd.DataFrame) -> pd.DataFrame:
             f"Missing harmonized variables: {missing}. "
             f"Update VARMAP using the official codebook/questionnaire."
         )
+
+    print("\nSelected source columns:")
+    for target, source in selected_sources.items():
+        print(f"  {target}: {source}")
 
     return out
 
