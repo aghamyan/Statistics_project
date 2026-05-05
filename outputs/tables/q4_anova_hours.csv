@@ -1,0 +1,3 @@
+test,term,sum_sq,df,F,PR(>F),status
+q4_hours_age_2024,age_group,,,,,skipped_insufficient_groups
+q4_hours_age_2021_2023,age_group,,,,,skipped_insufficient_groups

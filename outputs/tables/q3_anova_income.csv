@@ -1,0 +1,3 @@
+test,term,sum_sq,df,F,PR(>F),status
+q3_income_marital_2024,marital_status,,,,,skipped_insufficient_groups
+q3_income_marital_2021_2023,marital_status,,,,,skipped_insufficient_groups

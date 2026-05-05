@@ -1,0 +1,7 @@
+{
+  "note": "Update VARMAP and category maps using official questionnaire before final inference.",
+  "period_definition": {
+    "2024": "year == 2024",
+    "2021_2023": "year in [2021, 2022, 2023]"
+  }
+}
